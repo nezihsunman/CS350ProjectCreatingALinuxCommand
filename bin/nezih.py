@@ -9,10 +9,10 @@ import json
 import json
 
 
-class AppConfiguration(object):
-    def __init__(self, data=None):
-        if data is None:
-            with open('json.txt') as fh:
+class Json_Parser_Recursive(object):
+    def __init__(self, data=None, text=None):
+        if data is None and text is not None:
+            with open(text) as fh:
                 data = json.loads(fh.read())
         else:
             data = dict(data)
@@ -24,12 +24,11 @@ class AppConfiguration(object):
         if type(value) is list:
             return [self.compute_attr_value(x) for x in value]
         elif type(value) is dict:
-            return AppConfiguration(value)
+            return Json_Parser_Recursive(data=value)
         else:
             return value
 
-
-    def recursive_iteration(input, result ='') :
+    def recursive_iteration(input, result=''):
         if type(input) == dict:
             for k, v in input.items():
                 if type(v) == str:
@@ -48,23 +47,31 @@ class AppConfiguration(object):
             result += input + '\n\t'
         return result
 
+
 def main(argv):
-    if len(argv) == 1:
-        print("1")
+    if len(argv) == 1 | len(argv) == 0:
+        print('FATAL: %s' % e, file=sys.stderr)
+        sys.exit(1)
     elif len(argv) == 2:
-        print(argv[2])
+        print('FATAL: %s' % e, file=sys.stderr)
+        sys.exit(1)
     elif len(argv) == 3:
-        print("sss")
+        print('FATAL: %s' % e, file=sys.stderr)
+        sys.exit(1)
     else:
-        instance = AppConfiguration()
-        print(instance.article[0].id)
-        print(instance.blog[0].name)
-        # print(AppConfiguration.recursive_iteration(instance))
         if argv[2] == "-parse":
-            f = open(argv[3], 'r')
-            str = f.read()
-            jsonObject = json.loads(str)
-            print(jsonObject['blog'])
+            if argv[3] == '-show':
+                instance = Json_Parser_Recursive(text=argv[4])
+                print(instance.article[0].id)
+                print(instance.blog[0].name)
+            else:
+                """for x in iter(instance):
+                print(Json_Parser_Recursive.recursive_iteration(x))"""
+
+                f = open(argv[3], 'r')
+                str = f.read()
+                jsonObject = json.loads(str)
+                print(jsonObject['blog'])
         print(len(argv))
 
 

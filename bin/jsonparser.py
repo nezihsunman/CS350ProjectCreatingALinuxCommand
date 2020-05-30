@@ -21,7 +21,6 @@ class Json_Parser_Recursive(object):
         for key, val in data.items():
             setattr(self, key, self.compute_attr_value(val))
 
-
     def compute_attr_value(self, value):
         if type(value) is list:
             return [self.compute_attr_value(x) for x in value]
@@ -114,6 +113,17 @@ def recursive_iteration(input, result=''):
     return result
 
 
+def userInteraction(instance):
+    print("Send command")
+    print("json.name.name = ")
+    while (1):
+        input = sys.stdin.readline()
+        if input.startswith('json.'):
+            left = input.index(str, 5, len(str) - 1)
+            key = left.index(left, left.find('.'), len(str) - 1)
+
+
+
 def main(argv):
     if len(argv) == 1 | len(argv) == 0:
         print('FATAL: %s' % e, file=sys.stderr)
@@ -122,27 +132,49 @@ def main(argv):
         print('FATAL: %s' % e, file=sys.stderr)
         sys.exit(1)
     elif len(argv) == 3:
-        print('FATAL: %s' % e, file=sys.stderr)
-        sys.exit(1)
+        if argv[2] == "-help":
+            print('-parse <name> command will parse local json for you into python nested object')
+            print(
+                '-parse -show <name> command will parse local json for you into python nested object and show to terminal')
+            print('-parseurl <URL> command will parse remote url for you into python nested object')
+            print(
+                '-parseurl -show <URL> command will parse remote url for you into python nested object and show to terminal')
+
+        else:
+            print('FATAL: %s' % e, file=sys.stderr)
+            sys.exit(1)
     else:
-        if argv[2] == "-parse":
+        if argv[2] == "-help":
+            print('-parse <name> command will parse local json for you into python nested object')
+            print(
+                '-parse -show <name> command will parse local json for you into python nested object and show to terminal')
+            print('-parseurl <URL> command will parse remote url for you into python nested object')
+            print(
+                '-parseurl -show <URL> command will parse remote url for you into python nested object and show to terminal')
+
+        elif argv[2] == "-parse":
             if argv[3] == '-show':
                 data = ''
                 with open(argv[4]) as fh:
                     data = json.loads(fh.read())
                 instance = Json_Parser_Recursive(text=argv[4])
-                print (data)
+                print(data)
             else:
                 instance = Json_Parser_Recursive(text=argv[3])
-        if argv[2] == "-parseurl":
+
+        elif argv[2] == "-parseurl":
             if argv[3] == '-show':
                 url = argv[4]
                 response = urllib.urlopen(url)
                 data = json.load(response)
                 instance = Json_Parser_Recursive(data=data)
-                print (data)
+                print(data)
             else:
-                instance = Json_Parser_Recursive(text=argv[4])
+                url = argv[3]
+                response = urllib.urlopen(url)
+                data = json.load(response)
+                instance = Json_Parser_Recursive(data=data)
+
 
 if __name__ == '__main__':
     try:

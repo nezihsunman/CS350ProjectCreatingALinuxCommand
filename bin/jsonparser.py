@@ -3,11 +3,35 @@
 from __future__ import print_function
 import posix as posix
 import sys
-# from typing import Optional, List, Tuple, Dict, Any, cast
-import json
 import urllib
-
 import json
+import smtplib
+
+
+def prompt(prompt):
+    return raw_input(prompt).strip()
+
+
+def sentmail(message):
+    fromaddr = prompt("From: ")
+    toaddrs = prompt("To: ").split()
+    subject = prompt("Subject: ").split()
+
+    # Add the From: and To: headers at the start!
+    msg = ("From: %s\r\nTo: %s\r\nSubject: %s \r\n\r\n"
+           % (fromaddr, ", ".join(toaddrs), subject))
+
+    msg = msg + message
+    print("Message length is " + repr(len(msg)))
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    # Mail and password please enter
+    server.login('nezihsunman@gmail.com', 'password')
+    server.sendmail(fromaddr, toaddrs, msg)
+    server.close()
 
 
 class Json_Parser_Recursive(object):
@@ -113,17 +137,6 @@ def recursive_iteration(input, result=''):
     return result
 
 
-def userInteraction(instance):
-    print("Send command")
-    print("json.name.name = ")
-    while (1):
-        input = sys.stdin.readline()
-        if input.startswith('json.'):
-            left = input.index(str, 5, len(str) - 1)
-            key = left.index(left, left.find('.'), len(str) - 1)
-
-
-
 def main(argv):
     if len(argv) == 1 | len(argv) == 0:
         print('FATAL: %s' % e, file=sys.stderr)
@@ -150,25 +163,45 @@ def main(argv):
                 '-parse -show <name> command will parse local json for you into python nested object and show to terminal')
             print('-parseurl <URL> command will parse remote url for you into python nested object')
             print(
-                '-parseurl -show <URL> command will parse remote url for you into python nested object and show to terminal')
+                '-parseurl -show -sendmail <URL> command will parse remote url for you into python nested object and show to terminal and will send mail for Json Object')
+            print('-parseurl <URL> command will parse remote url for you into python nested object')
+            print(
+                '-parseurl -show -sendmail <URL> command will parse remote url for you into python nested object and show to terminal send to mail wit user spesification')
 
         elif argv[2] == "-parse":
             if argv[3] == '-show':
-                data = ''
-                with open(argv[4]) as fh:
-                    data = json.loads(fh.read())
-                instance = Json_Parser_Recursive(text=argv[4])
-                print(data)
+                if argv[4] == '-sendmail':
+                    data = ''
+                    with open(argv[5]) as fh:
+                        data = json.loads(fh.read())
+                    instance = Json_Parser_Recursive(text=argv[5])
+                    print(data)
+                    sentmail(str(data))
+                else:
+                    data = ''
+                    with open(argv[4]) as fh:
+                        data = json.loads(fh.read())
+                    instance = Json_Parser_Recursive(text=argv[4])
+                    print(data)
+
             else:
                 instance = Json_Parser_Recursive(text=argv[3])
 
         elif argv[2] == "-parseurl":
             if argv[3] == '-show':
-                url = argv[4]
-                response = urllib.urlopen(url)
-                data = json.load(response)
-                instance = Json_Parser_Recursive(data=data)
-                print(data)
+                if argv[4] == '-sendmail':
+                    url = argv[5]
+                    response = urllib.urlopen(url)
+                    data = json.load(response)
+                    instance = Json_Parser_Recursive(data=data)
+                    print(data)
+                    sentmail(str(data))
+                else:
+                    url = argv[4]
+                    response = urllib.urlopen(url)
+                    data = json.load(response)
+                    instance = Json_Parser_Recursive(data=data)
+                    print(data)
             else:
                 url = argv[3]
                 response = urllib.urlopen(url)
